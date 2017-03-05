@@ -66,7 +66,8 @@ def guestOneTable():
 
             j += 1
         cnfList.append(subList1)
-        cnfList.append(subList2)
+        if table > 1:
+            cnfList.append(subList2)
         i += 1
 
 
@@ -146,10 +147,23 @@ def checkForTrueClause(clause, model):
 def dpllImplementation(clause, symbols, model):
     ret = checkForTrueClause(clause, model)
 
-    if ret == 1:
+    if ret == True:
         return True
-    elif ret == 2:
+    elif ret == False:
         return False
+    else:
+        P = findPureSymbol(clause, symbols, model)
+        if P:
+            model.add(str(P))
+            dpllImplementation(clause, symbols, model)
+
+        P = findUnitClause(clause, model)
+
+        if P:
+            model.add(str(P))
+            dpllImplementation(clause, symbols, model)
+
+
 
 
 print player
