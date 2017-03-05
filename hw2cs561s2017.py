@@ -22,6 +22,8 @@ def cnfModeling(relation):
             subList = []
             subList.append("~X" + str(relation[0]) + str(j))
             subList.append("X" + str(relation[2]) + str(j))
+            symbols.add("~X" + str(relation[0]) + str(j))
+            symbols.add("X" + str(relation[2]) + str(j))
             cnfList.append(subList)
             # string = "~X" + str(relation[0]) + str(j) + "V" + "X" + str(relation[2]) + str(j)
             # cnfList.append(string)
@@ -29,6 +31,8 @@ def cnfModeling(relation):
             subList = []
             subList.append("X" + str(relation[0]) + str(j))
             subList.append("~X" + str(relation[2]) + str(j))
+            symbols.add("X" + str(relation[0]) + str(j))
+            symbols.add("~X" + str(relation[2]) + str(j))
             cnfList.append(subList)
             # string = "X" + str(relation[0]) + str(j) + "V" + "~X" + str(relation[2]) + str(j)
             # cnfList.append(string)
@@ -38,6 +42,8 @@ def cnfModeling(relation):
             subList = []
             subList.append("~X" + str(relation[0]) + str(j))
             subList.append("~X" + str(relation[2]) + str(j))
+            symbols.add("~X" + str(relation[0]) + str(j))
+            symbols.add("X" + str(relation[2]) + str(j))
             # string = "~X" + str(relation[0]) + str(j) + "V" + "~X" + str(relation[2]) + str(j)
             # cnfList.append(string)
             cnfList.append(subList)
@@ -138,10 +144,11 @@ def checkForTrueClause(clause, model):
                 else:
                     if ("~" + mod_ele) in clause_ele:
                         clause_ele.remove("~" + mod_ele)
-            if not clause_ele:
-                return False
+                if not clause_ele:
+                    return False
 
     if not clause:
+        print "One of the output is ", model
         return True
 
     for c in clause:
@@ -171,23 +178,26 @@ def dpllImplementation(clause, symbols, model):
         return False
     print "In DPLL Clause : " , clause
     if not clause:
+        print "One of the output is ", model
         return True
     ret = checkForTrueClause(clause, model)
 
     if ret == True:
+        print "One of the output is ", model
         return True
     elif ret == False:
         return False
     else:
         P = findPureSymbol(clause, symbols, model)
         if P:
-            print "Pure Symbol : " + P
-            print "Clause ", clause
-            print "Symbol ", symbols
+
             model.add(str(P))
             if symbols:
                 symbols.discard(P)
-            dpllImplementation(clause, symbols, model)
+            print "Pure Symbol : " + P
+            print "Clause ", clause
+            print "Symbol ", symbols
+            return dpllImplementation(clause, symbols, model)
 
         P = findUnitClause(clause, model)
 
@@ -198,11 +208,13 @@ def dpllImplementation(clause, symbols, model):
             model.add(str(P))
             if symbols:
                 symbols.discard(P)
-            dpllImplementation(clause, symbols, model)
+            return dpllImplementation(clause, symbols, model)
 
         if not symbols:
+            print "One of the output is ", model
             return True
         if not clause:
+            print "One of the output is ", model
             return True
         first = symbols.pop()
         symbols.discard(first)
@@ -230,4 +242,3 @@ print symbols
 
 sat_status = dpllImplementation(cnfList, symbols, model)
 print "DPLL return status : ", sat_status
-print "One of the output is ", model
