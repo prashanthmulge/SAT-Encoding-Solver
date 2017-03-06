@@ -2,7 +2,7 @@ import math
 import copy
 from copy import deepcopy
 
-file_read = open('input6', 'r')
+file_read = open('input3.txt', 'r')
 file_write = open('output.txt', 'w')
 
 player = file_read.readline().strip().split()
@@ -11,6 +11,7 @@ table = int(player[1])
 main_model = set([])
 main_symbols = set([])
 cnfList = []
+output_log = ""
 
 
 def cnfModeling(per1, per2, rel):
@@ -19,18 +20,18 @@ def cnfModeling(per1, per2, rel):
     if rel == "F":
         while j <= table:
             subList = []
-            subList.append("~X" + str(per1) + str(j))
-            subList.append("X" + str(per2) + str(j))
+            subList.append("~X" + "-" + str(per1) + "-" + str(j))
+            subList.append("X" + "-" + str(per2) + "-" + str(j))
             # symbols.add("~X" + str(relation[0]) + str(j))
-            main_symbols.add("X" + str(per2) + str(j))
+            main_symbols.add("X" + "-" + str(per2) + "-" + str(j))
             cnfList.append(subList)
             # string = "~X" + str(relation[0]) + str(j) + "V" + "X" + str(relation[2]) + str(j)
             # cnfList.append(string)
 
             subList = []
-            subList.append("X" + str(per1) + str(j))
-            subList.append("~X" + str(per2) + str(j))
-            main_symbols.add("X" + str(per1) + str(j))
+            subList.append("X" + "-" + str(per1) + "-" + str(j))
+            subList.append("~X" + "-" + str(per2) + "-" + str(j))
+            main_symbols.add("X" + "-" + str(per1) + "-" + str(j))
             # symbols.add("~X" + str(relation[2]) + str(j))
             cnfList.append(subList)
             # string = "X" + str(relation[0]) + str(j) + "V" + "~X" + str(relation[2]) + str(j)
@@ -39,10 +40,10 @@ def cnfModeling(per1, per2, rel):
     else:
         while j <= table:
             subList = []
-            subList.append("~X" + str(per1) + str(j))
-            subList.append("~X" + str(per2) + str(j))
-            main_symbols.add("X" + str(per1) + str(j))
-            main_symbols.add("X" + str(per2) + str(j))
+            subList.append("~X" + "-" + str(per1) + "-" + str(j))
+            subList.append("~X" + "-" + str(per2) + "-" + str(j))
+            main_symbols.add("X" + "-" + str(per1) + "-" + str(j))
+            main_symbols.add("X" + "-" + str(per2) + "-" + str(j))
             # string = "~X" + str(relation[0]) + str(j) + "V" + "~X" + str(relation[2]) + str(j)
             # cnfList.append(string)
             cnfList.append(subList)
@@ -59,10 +60,10 @@ def guestOneTable():
         subList2 = []
 
         while j <= table:
-            subList1.append("X" + str(i) + str(j))
-            main_symbols.add("X" + str(i) + str(j))
+            subList1.append("X" + "-" + str(i) + "-" + str(j))
+            main_symbols.add("X" + "-" + str(i) + "-" + str(j))
             # string1 += "X" + str(i) + str(j)
-            subList2.append("~X" + str(i) + str(j))
+            subList2.append("~X" + "-" + str(i) + "-" + str(j))
             # if table > 1:
             #     symbols.add("~X" + str(i) + str(j))
             # string2 += "~X" + str(i) + str(j)
@@ -107,10 +108,8 @@ def findPureSymbol(clauses, symbols, model):
     return None
 
 
-
-
 def findUnitClause(clauses, model):
-    print "Unit"#, clauses
+    print "Unit"
     toRemove = []
     for clause_ele in clauses:
         if len(clause_ele) == 1:
@@ -129,6 +128,15 @@ def findUnitClause(clauses, model):
                 clauses.remove(ele)
             return clause_ele[0]
     return None
+
+
+def formatOutput(oModel):
+    global guest
+    global output_log
+    for i in range(0, guest):
+        for ele in oModel:
+            if ele[0:3] == "X-" + str(i+1):
+                output_log += "\n" + ele[2] + " " + ele[4]
 
 
 def checkForTrueClause(clause, newModel):
@@ -153,6 +161,7 @@ def checkForTrueClause(clause, newModel):
                     return False
 
     if not clause:
+        formatOutput(newModel)
         print "One of the output is ", newModel
         return True
 
@@ -171,25 +180,33 @@ def model_union(new_model, pop_str, type):
     else:
         new_model.add("~" + pop_str)
 
-    return deepcopy(new_model)
+    return copy.deepcopy(new_model)
 
 
 def removeSymbol(new_symbol, str1):
+    newTemp = set([])
     if str1[0] == "~":
         new_symbol.discard(str1[1:])
     else:
         new_symbol.discard(str1)
+        for i in new_symbol:
+            if i[0:3] == str1[0:3]:
+                newTemp.add(i)
+        for i in newTemp:
+            new_symbol.discard(i)
 
 
 def dpllImplementation(clause, symbols, model):
     print "In DPLL"
     # print "In DPLL Clause : " , clause
     if not clause:
+        formatOutput(model)
         print "One of the output is ", model
         return True
     ret = checkForTrueClause(clause, model)
 
     if ret == True:
+        formatOutput(model)
         print "One of the output is ", model
         return True
     elif ret == False:
@@ -220,9 +237,11 @@ def dpllImplementation(clause, symbols, model):
             return dpllImplementation(clause, symbols, model)
 
         if not symbols:
+            formatOutput(model)
             print "One of the output is ", model
             return True
         if not clause:
+            formatOutput(model)
             print "One of the output is ", model
             return True
         first = symbols.pop()
@@ -231,7 +250,8 @@ def dpllImplementation(clause, symbols, model):
         print "Popping : ", first
         # print "symbols : ", symbols
         # print "Clause : ", clause
-        return dpllImplementation(clause, symbols, model_union(model, first, 1)) or dpllImplementation(clause, symbols, model_union(model, first, 2))
+        return dpllImplementation(clause, copy.deepcopy(symbols), model_union(model, first, 1)) \
+               or dpllImplementation(clause, copy.deepcopy(symbols), model_union(model, first, 2))
 
 print player
 print guest, table
@@ -248,5 +268,26 @@ print cnfList
 print len(cnfList)
 print main_symbols
 
+# def test(symbol):
+#     symbol.clear()
+#     symbol.add(10)
+#     print symbol
+#
+#
+#
+# sym = set([])
+# sym.add(1)
+# sym.add(2)
+# sym.add(3)
+# sym.add(4)
+# sym.add(5)
+# print sym
+# test(deepcopy(sym))
+# print sym
+
 sat_status = dpllImplementation(cnfList, main_symbols, main_model)
 print "DPLL return status : ", str(sat_status)
+file_write.write(str(sat_status) + "\n")
+
+print output_log[1:]
+file_write.write(output_log[1:])
