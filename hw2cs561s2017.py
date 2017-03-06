@@ -1,38 +1,37 @@
 import math
 import copy
 from copy import deepcopy
-from sets import Set
 
-file_read = open('input.txt', 'r')
+file_read = open('input6', 'r')
 file_write = open('output.txt', 'w')
 
 player = file_read.readline().strip().split()
 guest = int(player[0])
 table = int(player[1])
-model = Set([])
-symbols = Set([])
+main_model = set([])
+main_symbols = set([])
 cnfList = []
 
 
-def cnfModeling(relation):
-    print relation, relation[4], relation[0], type(relation[2])
+def cnfModeling(per1, per2, rel):
+    print per1, per2, rel
     j = 1
-    if relation[4] == "F":
+    if rel == "F":
         while j <= table:
             subList = []
-            subList.append("~X" + str(relation[0]) + str(j))
-            subList.append("X" + str(relation[2]) + str(j))
-            symbols.add("~X" + str(relation[0]) + str(j))
-            symbols.add("X" + str(relation[2]) + str(j))
+            subList.append("~X" + str(per1) + str(j))
+            subList.append("X" + str(per2) + str(j))
+            # symbols.add("~X" + str(relation[0]) + str(j))
+            main_symbols.add("X" + str(per2) + str(j))
             cnfList.append(subList)
             # string = "~X" + str(relation[0]) + str(j) + "V" + "X" + str(relation[2]) + str(j)
             # cnfList.append(string)
 
             subList = []
-            subList.append("X" + str(relation[0]) + str(j))
-            subList.append("~X" + str(relation[2]) + str(j))
-            symbols.add("X" + str(relation[0]) + str(j))
-            symbols.add("~X" + str(relation[2]) + str(j))
+            subList.append("X" + str(per1) + str(j))
+            subList.append("~X" + str(per2) + str(j))
+            main_symbols.add("X" + str(per1) + str(j))
+            # symbols.add("~X" + str(relation[2]) + str(j))
             cnfList.append(subList)
             # string = "X" + str(relation[0]) + str(j) + "V" + "~X" + str(relation[2]) + str(j)
             # cnfList.append(string)
@@ -40,10 +39,10 @@ def cnfModeling(relation):
     else:
         while j <= table:
             subList = []
-            subList.append("~X" + str(relation[0]) + str(j))
-            subList.append("~X" + str(relation[2]) + str(j))
-            symbols.add("~X" + str(relation[0]) + str(j))
-            symbols.add("X" + str(relation[2]) + str(j))
+            subList.append("~X" + str(per1) + str(j))
+            subList.append("~X" + str(per2) + str(j))
+            main_symbols.add("X" + str(per1) + str(j))
+            main_symbols.add("X" + str(per2) + str(j))
             # string = "~X" + str(relation[0]) + str(j) + "V" + "~X" + str(relation[2]) + str(j)
             # cnfList.append(string)
             cnfList.append(subList)
@@ -61,11 +60,11 @@ def guestOneTable():
 
         while j <= table:
             subList1.append("X" + str(i) + str(j))
-            symbols.add("X" + str(i) + str(j))
+            main_symbols.add("X" + str(i) + str(j))
             # string1 += "X" + str(i) + str(j)
             subList2.append("~X" + str(i) + str(j))
-            if table > 1:
-                symbols.add("~X" + str(i) + str(j))
+            # if table > 1:
+            #     symbols.add("~X" + str(i) + str(j))
             # string2 += "~X" + str(i) + str(j)
             # if j < table:
             #     # string1 += "V"
@@ -82,25 +81,28 @@ def guestOneTable():
 
 def findPureSymbol(clauses, symbols, model):
     print "Pure"
+    toRemove = []
     if not symbols:
         return None
     isPure = 0
     for clause_ele in clauses:
         isPure = 1
         for del_clause in clause_ele:
-            if del_clause[0] == "~":
-                if del_clause[1:] in symbols:
-                    isPure = 0
-                    break
-            else:
-                if ("~" + del_clause ) in symbols:
-                    isPure = 0
-                    break
+            for ele in clauses:
+                if del_clause[0] == "~":
+                    if del_clause[1:] in ele:
+                        isPure = 0
+                        break
+                else:
+                    if ("~" + del_clause ) in ele:
+                        isPure = 0
+                        break
             if isPure:
-                model.add(del_clause)
                 for j in clauses:
                     if del_clause in j:
-                        clauses.remove(j)
+                        toRemove.append(j)
+                for ele in toRemove:
+                    clauses.remove(ele)
                 return del_clause
     return None
 
@@ -108,13 +110,14 @@ def findPureSymbol(clauses, symbols, model):
 
 
 def findUnitClause(clauses, model):
-    print "Unit", clauses
+    print "Unit"#, clauses
+    toRemove = []
     for clause_ele in clauses:
         if len(clause_ele) == 1:
-            model.add(clause_ele[0])
+
             for del_clause in clauses:
                 if clause_ele[0] in del_clause:
-                    clauses.remove(del_clause)
+                    toRemove.append(del_clause)
                 else:
                     if clause_ele[0][0] == "~":
                         if clause_ele[0][1:] in del_clause:
@@ -122,15 +125,17 @@ def findUnitClause(clauses, model):
                     else:
                         if ("~" + clause_ele[0]) in del_clause:
                             del_clause.remove("~" + clause_ele[0])
+            for ele in toRemove:
+                clauses.remove(ele)
             return clause_ele[0]
     return None
 
 
-def checkForTrueClause(clause, model):
-    if not model:
+def checkForTrueClause(clause, newModel):
+    if not newModel:
         return "Cont"
     toRemove = []
-    for mod_ele in model:
+    for mod_ele in newModel:
         for clause_ele in clause:
             if not clause_ele:
                 return False
@@ -148,7 +153,7 @@ def checkForTrueClause(clause, model):
                     return False
 
     if not clause:
-        print "One of the output is ", model
+        print "One of the output is ", newModel
         return True
 
     for c in clause:
@@ -160,23 +165,25 @@ def checkForTrueClause(clause, model):
     return "Cont"
 
 
-def model_union(model, pop_str, type):
+def model_union(new_model, pop_str, type):
     if type == 1:
-        model.add(pop_str)
+        new_model.add(pop_str)
     else:
-        if pop_str[0] == "~":
-            model.add(pop_str[1:])
-        else:
-            model.add("~" + pop_str)
+        new_model.add("~" + pop_str)
 
-    return deepcopy(model)
+    return deepcopy(new_model)
+
+
+def removeSymbol(new_symbol, str1):
+    if str1[0] == "~":
+        new_symbol.discard(str1[1:])
+    else:
+        new_symbol.discard(str1)
 
 
 def dpllImplementation(clause, symbols, model):
     print "In DPLL"
-    if not symbols:
-        return False
-    print "In DPLL Clause : " , clause
+    # print "In DPLL Clause : " , clause
     if not clause:
         print "One of the output is ", model
         return True
@@ -188,26 +195,28 @@ def dpllImplementation(clause, symbols, model):
     elif ret == False:
         return False
     else:
+        print "Clause ", clause
         P = findPureSymbol(clause, symbols, model)
         if P:
 
             model.add(str(P))
             if symbols:
-                symbols.discard(P)
+                removeSymbol(symbols, P)
             print "Pure Symbol : " + P
             print "Clause ", clause
-            print "Symbol ", symbols
+            # print "Symbol ", symbols
             return dpllImplementation(clause, symbols, model)
-
+        print "Clause ", clause
         P = findUnitClause(clause, model)
 
         if P:
-            print "Unit Symbol : " + P
-            print "Clause ", clause
-            print "Symbol ", symbols
+
             model.add(str(P))
             if symbols:
-                symbols.discard(P)
+                removeSymbol(symbols, P)
+            print "Unit Symbol : " + P
+            print "Clause ", clause
+            # print "Symbol ", symbols
             return dpllImplementation(clause, symbols, model)
 
         if not symbols:
@@ -217,28 +226,27 @@ def dpllImplementation(clause, symbols, model):
             print "One of the output is ", model
             return True
         first = symbols.pop()
-        symbols.discard(first)
-        print "CALLING DPLL FOR AMBIGIOUS CASE"
+        removeSymbol(symbols, first)
+        # print "CALLING DPLL FOR AMBIGUOUS CASE"
         print "Popping : ", first
-        print "symbols : ", symbols
-        print "Clause : ", clause
+        # print "symbols : ", symbols
+        # print "Clause : ", clause
         return dpllImplementation(clause, symbols, model_union(model, first, 1)) or dpllImplementation(clause, symbols, model_union(model, first, 2))
 
 print player
 print guest, table
 
 guestOneTable()
-print cnfList
-print symbols
 
 for line in file_read:
-    relation = list(line.strip())
-    cnfModeling(relation)
+    relation = list(line.strip().split())
+    p1,p2,rel = relation
+    cnfModeling(p1, p2, rel)
 
 print "Final output"
 print cnfList
 print len(cnfList)
-print symbols
+print main_symbols
 
-sat_status = dpllImplementation(cnfList, symbols, model)
-print "DPLL return status : ", sat_status
+sat_status = dpllImplementation(cnfList, main_symbols, main_model)
+print "DPLL return status : ", str(sat_status)
