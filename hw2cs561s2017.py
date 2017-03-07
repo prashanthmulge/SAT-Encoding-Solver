@@ -2,7 +2,7 @@ import math
 import copy
 from copy import deepcopy
 
-file_read = open('input3.txt', 'r')
+file_read = open('input6', 'r')
 file_write = open('output.txt', 'w')
 
 player = file_read.readline().strip().split()
@@ -134,9 +134,10 @@ def formatOutput(oModel):
     global guest
     global output_log
     for i in range(0, guest):
-        for ele in oModel:
-            if ele[0:3] == "X-" + str(i+1):
-                output_log += "\n" + ele[2] + " " + ele[4]
+        for j in oModel:
+            ele = str(j).split("-")
+            if ele[0] == "X" and ele[1] == str(i+1):
+                output_log += "\n" + ele[1] + " " + ele[2]
 
 
 def checkForTrueClause(clause, newModel):
@@ -190,7 +191,9 @@ def removeSymbol(new_symbol, str1):
     else:
         new_symbol.discard(str1)
         for i in new_symbol:
-            if i[0:3] == str1[0:3]:
+            del_str = str(str1).split("-")
+            ele = str(i).split("-")
+            if del_str[1] == ele[1]:
                 newTemp.add(i)
         for i in newTemp:
             new_symbol.discard(i)
@@ -287,7 +290,10 @@ print main_symbols
 
 sat_status = dpllImplementation(cnfList, main_symbols, main_model)
 print "DPLL return status : ", str(sat_status)
-file_write.write(str(sat_status) + "\n")
+if sat_status:
+    file_write.write("yes" + "\n")
+else:
+    file_write.write("no" + "\n")
 
 print output_log[1:]
 file_write.write(output_log[1:])
