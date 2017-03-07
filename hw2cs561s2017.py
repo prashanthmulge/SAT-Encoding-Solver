@@ -2,7 +2,7 @@ import math
 import copy
 from copy import deepcopy
 
-file_read = open('input6', 'r')
+file_read = open('input7.txt', 'r')
 file_write = open('output.txt', 'w')
 
 player = file_read.readline().strip().split()
@@ -80,11 +80,9 @@ def guestOneTable():
         i += 1
 
 
-def findPureSymbol(clauses, symbols, model):
-    print "Pure"
-    toRemove = []
-    if not symbols:
-        return None
+def findPureSymbol(clauses, model):
+    # print "Pure"
+    toRemoveClause = []
     isPure = 0
     for clause_ele in clauses:
         isPure = 1
@@ -99,33 +97,33 @@ def findPureSymbol(clauses, symbols, model):
                         isPure = 0
                         break
             if isPure:
-                for j in clauses:
-                    if del_clause in j:
-                        toRemove.append(j)
-                for ele in toRemove:
-                    clauses.remove(ele)
+                # for j in clauses:
+                #     if del_clause in j:
+                #         toRemoveClause.append(j)
+                # for ele in toRemoveClause:
+                #     clauses.remove(ele)
                 return del_clause
     return None
 
 
 def findUnitClause(clauses, model):
-    print "Unit"
-    toRemove = []
+    # print "Unit"
+    toRemoveClause = []
     for clause_ele in clauses:
         if len(clause_ele) == 1:
 
-            for del_clause in clauses:
-                if clause_ele[0] in del_clause:
-                    toRemove.append(del_clause)
-                else:
-                    if clause_ele[0][0] == "~":
-                        if clause_ele[0][1:] in del_clause:
-                            del_clause.remove(clause_ele[0][1:])
-                    else:
-                        if ("~" + clause_ele[0]) in del_clause:
-                            del_clause.remove("~" + clause_ele[0])
-            for ele in toRemove:
-                clauses.remove(ele)
+            # for del_clause in clauses:
+            #     if clause_ele[0] in del_clause:
+            #         toRemoveClause.append(del_clause)
+            #     else:
+            #         if clause_ele[0][0] == "~":
+            #             if clause_ele[0][1:] in del_clause:
+            #                 del_clause.remove(clause_ele[0][1:])
+            #         else:
+            #             if ("~" + clause_ele[0]) in del_clause:
+            #                 del_clause.remove("~" + clause_ele[0])
+            # for ele in toRemoveClause:
+            #     clauses.remove(ele)
             return clause_ele[0]
     return None
 
@@ -150,7 +148,6 @@ def checkForTrueClause(clause, newModel):
                 return False
             if mod_ele in clause_ele:
                 toRemove.append(clause_ele)
-                #clause.remove(clause_ele)
             else:
                 if mod_ele[0] == "~":
                     if mod_ele[1:] in clause_ele:
@@ -200,7 +197,7 @@ def removeSymbol(new_symbol, str1):
 
 
 def dpllImplementation(clause, symbols, model):
-    print "In DPLL"
+    # print "In DPLL"
     # print "In DPLL Clause : " , clause
     if not clause:
         formatOutput(model)
@@ -215,27 +212,25 @@ def dpllImplementation(clause, symbols, model):
     elif ret == False:
         return False
     else:
-        print "Clause ", clause
-        P = findPureSymbol(clause, symbols, model)
+        # print "Clause ", clause
+        P = findPureSymbol(clause, model)
         if P:
-
             model.add(str(P))
             if symbols:
                 removeSymbol(symbols, P)
-            print "Pure Symbol : " + P
-            print "Clause ", clause
+            # print "Pure Symbol : " + P
+            # print "Clause ", clause
             # print "Symbol ", symbols
             return dpllImplementation(clause, symbols, model)
-        print "Clause ", clause
+        # print "Clause ", clause
         P = findUnitClause(clause, model)
 
         if P:
-
             model.add(str(P))
             if symbols:
                 removeSymbol(symbols, P)
-            print "Unit Symbol : " + P
-            print "Clause ", clause
+            # print "Unit Symbol : " + P
+            # print "Clause ", clause
             # print "Symbol ", symbols
             return dpllImplementation(clause, symbols, model)
 
@@ -250,14 +245,14 @@ def dpllImplementation(clause, symbols, model):
         first = symbols.pop()
         removeSymbol(symbols, first)
         # print "CALLING DPLL FOR AMBIGUOUS CASE"
-        print "Popping : ", first
+        # print "Popping : ", first
         # print "symbols : ", symbols
         # print "Clause : ", clause
         return dpllImplementation(clause, copy.deepcopy(symbols), model_union(model, first, 1)) \
                or dpllImplementation(clause, copy.deepcopy(symbols), model_union(model, first, 2))
 
-print player
-print guest, table
+# print player
+# print guest, table
 
 guestOneTable()
 
@@ -266,10 +261,10 @@ for line in file_read:
     p1,p2,rel = relation
     cnfModeling(p1, p2, rel)
 
-print "Final output"
-print cnfList
-print len(cnfList)
-print main_symbols
+# print "Final output"
+# print cnfList
+# print len(cnfList)
+# print main_symbols
 
 # def test(symbol):
 #     symbol.clear()
