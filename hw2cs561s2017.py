@@ -97,11 +97,6 @@ def findPureSymbol(clauses, model):
                         isPure = 0
                         break
             if isPure:
-                # for j in clauses:
-                #     if del_clause in j:
-                #         toRemoveClause.append(j)
-                # for ele in toRemoveClause:
-                #     clauses.remove(ele)
                 return del_clause
     return None
 
@@ -111,19 +106,6 @@ def findUnitClause(clauses, model):
     toRemoveClause = []
     for clause_ele in clauses:
         if len(clause_ele) == 1:
-
-            # for del_clause in clauses:
-            #     if clause_ele[0] in del_clause:
-            #         toRemoveClause.append(del_clause)
-            #     else:
-            #         if clause_ele[0][0] == "~":
-            #             if clause_ele[0][1:] in del_clause:
-            #                 del_clause.remove(clause_ele[0][1:])
-            #         else:
-            #             if ("~" + clause_ele[0]) in del_clause:
-            #                 del_clause.remove("~" + clause_ele[0])
-            # for ele in toRemoveClause:
-            #     clauses.remove(ele)
             return clause_ele[0]
     return None
 
@@ -265,23 +247,6 @@ for line in file_read:
 # print cnfList
 # print len(cnfList)
 # print main_symbols
-
-# def test(symbol):
-#     symbol.clear()
-#     symbol.add(10)
-#     print symbol
-#
-#
-#
-# sym = set([])
-# sym.add(1)
-# sym.add(2)
-# sym.add(3)
-# sym.add(4)
-# sym.add(5)
-# print sym
-# test(deepcopy(sym))
-# print sym
 
 sat_status = dpllImplementation(cnfList, main_symbols, main_model)
 print "DPLL return status : ", str(sat_status)
